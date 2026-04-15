@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maji Mazuri VarieTrak</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1a0f;
+    --surface: #111f13;
+    --surface2: #172019;
+    --border: #1e3022;
+    --accent: #4ade80;
+    --accent2: #86efac;
+    --accent3: #bbf7d0;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --purple: #c084fc;
+    --text: #e2f5e6;
+    --muted: #5a7c60;
+    --grid: rgba(78,222,128,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow {
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
+    top: -200px; left: -100px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 36px 0 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .logo-block h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(18px, 3vw, 30px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .logo-block p {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .header-stats { display: flex; gap: 20px; flex-wrap: wrap; }
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 16px;
+    text-align: center;
+  }
+  .stat-pill .val {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-pill .lbl {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-wrap input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px 10px 38px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-wrap .icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14px;
+  }
+  select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+  select:focus { border-color: var(--accent); }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #0d1a0f; font-weight: 500; }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: var(--surface2); border-bottom: 1px solid var(--border); }
+  th {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 14px;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  th:hover { color: var(--accent); }
+  th .sort-icon { margin-left: 4px; opacity: 0.4; }
+  th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(74,222,128,0.03); }
+
+  .gh-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .gh-a { background: rgba(74,222,128,0.15); color: var(--accent); border: 1px solid rgba(74,222,128,0.25); }
+  .gh-b { background: rgba(134,239,172,0.12); color: var(--accent2); border: 1px solid rgba(134,239,172,0.2); }
+  .gh-c { background: rgba(187,247,208,0.1); color: var(--accent3); border: 1px solid rgba(187,247,208,0.15); }
+  .gh-d { background: rgba(251,191,36,0.12); color: var(--warn); border: 1px solid rgba(251,191,36,0.2); }
+
+  .sev-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .pest-low { background: rgba(74,222,128,0.12); color: var(--accent); }
+  .pest-med { background: rgba(251,191,36,0.12); color: var(--warn); }
+  .pest-high { background: rgba(248,113,113,0.12); color: var(--danger); }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 4px; min-width: 120px; }
+  .tag-item {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 10px;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    border: 1px solid;
+  }
+  .tag-pest   { color: var(--warn);   border-color: rgba(251,191,36,0.35);  background: rgba(251,191,36,0.08); }
+  .tag-disease{ color: var(--purple); border-color: rgba(192,132,252,0.35); background: rgba(192,132,252,0.08); }
+  .tag-none   { color: var(--muted);  border-color: var(--border); background: transparent; font-style: italic; }
+
+  .stem-bar { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .stem-bar-track {
+    width: 65px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .stem-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+  .head-dots { display: flex; gap: 3px; }
+  .head-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .head-dot.filled { background: var(--accent); }
+  .actions { display: flex; gap: 6px; }
+  .icon-btn {
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .icon-btn.del:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* MODAL */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 640px;
+    max-height: 92vh;
+    overflow-y: auto;
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
+  .modal-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .modal-body { padding: 24px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+  }
+  input[type="text"], input[type="number"], input[type="date"], textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+
+  .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .radio-option { position: relative; }
+  .radio-option input { display: none; }
+  .radio-option label {
+    display: inline-block;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: capitalize;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .radio-option input:checked + label {
+    border-color: var(--accent);
+    background: rgba(74,222,128,0.1);
+    color: var(--accent);
+  }
+
+  .check-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .check-option { position: relative; }
+  .check-option input[type="checkbox"] { display: none; }
+  .check-option label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 13px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+    color: var(--text);
+    text-transform: none;
+  }
+  /* Pest → amber */
+  .pest-checks .check-option input:checked + label {
+    border-color: rgba(251,191,36,0.6);
+    background: rgba(251,191,36,0.1);
+    color: var(--warn);
+  }
+  /* Disease → purple */
+  .disease-checks .check-option input:checked + label {
+    border-color: rgba(192,132,252,0.6);
+    background: rgba(192,132,252,0.1);
+    color: var(--purple);
+  }
+
+  .section-sep {
+    grid-column: 1/-1;
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2px 0;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    position: sticky; bottom: 0;
+    background: var(--surface);
+  }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+  .close-btn {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .close-btn:hover { color: var(--danger); border-color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="container">
+
+  <header>
+    <div class="logo-block">
+      <h1>🌿 Maji Mazuri VarieTrak</h1>
+      <p>Greenhouse Variety Trial Monitor</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill"><div class="val" id="stat-trials">0</div><div class="lbl">Trials</div></div>
+      <div class="stat-pill"><div class="val" id="stat-plants">0</div><div class="lbl">Plants</div></div>
+      <div class="stat-pill"><div class="val" id="stat-houses">0</div><div class="lbl">Greenhouses</div></div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="icon">⌕</span>
+      <input type="text" id="searchInput" placeholder="Search variety, greenhouse, pest, disease...">
+    </div>
+    <select id="filterGH"><option value="">All Greenhouses</option></select>
+    <select id="filterSev">
+      <option value="">All Severity Levels</option>
+      <option value="Low">Low</option>
+      <option value="Moderate">Moderate</option>
+      <option value="High">High</option>
+    </select>
+    <button class="btn btn-primary" onclick="openModal()">＋ Add Trial</button>
+    <button class="btn btn-outline" onclick="exportCSV()">↓ Export</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('greenhouse')" id="th-greenhouse">Greenhouse <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('variety')" id="th-variety">Variety <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('stemLength')" id="th-stemLength">Stem Length <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('headSize')" id="th-headSize">Head Size <span class="sort-icon">⇅</span></th>
+          <th>🦗 Pests</th>
+          <th>🍃 Diseases</th>
+          <th onclick="sortBy('severity')" id="th-severity">Severity <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('plantingDate')" id="th-plantingDate">Planting Date <span class="sort-icon">⇅</span></th>
+          <th onclick="sortBy('numPlants')" id="th-numPlants">Plants <span class="sort-icon">⇅</span></th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">New Trial Entry</h2>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Greenhouse</label>
+          <input type="text" id="f-greenhouse" placeholder="e.g. GH-01" list="gh-list">
+          <datalist id="gh-list"></datalist>
+        </div>
+
+        <div class="form-group">
+          <label>Variety Name</label>
+          <input type="text" id="f-variety" placeholder="e.g. Roma VF">
+        </div>
+
+        <div class="form-group">
+          <label>Stem Length (cm)</label>
+          <input type="number" id="f-stem" placeholder="e.g. 45" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>Head Size</label>
+          <div class="radio-group">
+            <div class="radio-option"><input type="radio" name="headSize" id="hs-small" value="Small"><label for="hs-small">Small</label></div>
+            <div class="radio-option"><input type="radio" name="headSize" id="hs-med" value="Medium"><label for="hs-med">Medium</label></div>
+            <div class="radio-option"><input type="radio" name="headSize" id="hs-large" value="Large"><label for="hs-large">Large</label></div>
+            <div class="radio-option"><input type="radio" name="headSize" id="hs-xl" value="X-Large"><label for="hs-xl">X-Large</label></div>
+          </div>
+        </div>
+
+        <hr class="section-sep">
+
+        <div class="form-group full">
+          <label>🦗 Pests Observed — select all that apply</label>
+          <div class="check-group pest-checks">
+            <div class="check-option"><input type="checkbox" id="p-thrips"      value="Thrips"      name="cpests"><label for="p-thrips">Thrips</label></div>
+            <div class="check-option"><input type="checkbox" id="p-mites"       value="Mites"       name="cpests"><label for="p-mites">Mites</label></div>
+            <div class="check-option"><input type="checkbox" id="p-caterpillar" value="Caterpillar" name="cpests"><label for="p-caterpillar">Caterpillar</label></div>
+            <div class="check-option"><input type="checkbox" id="p-whiteflies"  value="Whiteflies"  name="cpests"><label for="p-whiteflies">Whiteflies</label></div>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>🍃 Diseases Observed — select all that apply</label>
+          <div class="check-group disease-checks">
+            <div class="check-option"><input type="checkbox" id="d-downy"   value="Downy Mildew"   name="cdiseases"><label for="d-downy">Downy Mildew</label></div>
+            <div class="check-option"><input type="checkbox" id="d-powdery" value="Powdery Mildew" name="cdiseases"><label for="d-powdery">Powdery Mildew</label></div>
+            <div class="check-option"><input type="checkbox" id="d-botrytis"value="Botrytis"       name="cdiseases"><label for="d-botrytis">Botrytis</label></div>
+            <div class="check-option"><input type="checkbox" id="d-rust"    value="Rust"            name="cdiseases"><label for="d-rust">Rust</label></div>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>Overall Susceptibility Level</label>
+          <div class="radio-group">
+            <div class="radio-option"><input type="radio" name="severity" id="sev-low" value="Low"><label for="sev-low">Low</label></div>
+            <div class="radio-option"><input type="radio" name="severity" id="sev-mod" value="Moderate"><label for="sev-mod">Moderate</label></div>
+            <div class="radio-option"><input type="radio" name="severity" id="sev-high" value="High"><label for="sev-high">High</label></div>
+          </div>
+        </div>
+
+        <hr class="section-sep">
+
+        <div class="form-group">
+          <label>Planting Date</label>
+          <input type="date" id="f-date">
+        </div>
+
+        <div class="form-group">
+          <label>Number of Plants</label>
+          <input type="number" id="f-plants" placeholder="e.g. 120" min="1">
+        </div>
+
+        <div class="form-group full">
+          <label>Notes (optional)</label>
+          <textarea id="f-notes" rows="2" placeholder="Any additional observations..."></textarea>
+        </div>
+
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEntry()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let trials = JSON.parse(localStorage.getItem('mmvt_trials') || '[]');
+let editId = null;
+let sortCol = 'plantingDate';
+let sortDir = -1;
+
+const headMap = { Small:1, Medium:2, Large:3, 'X-Large':4 };
+const sevColor = { Low:'pest-low', Moderate:'pest-med', High:'pest-high' };
+
+function save() { localStorage.setItem('mmvt_trials', JSON.stringify(trials)); }
+
+function getCheckedByName(name) {
+  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
+}
+function setCheckedByName(name, vals=[]) {
+  document.querySelectorAll(`input[name="${name}"]`).forEach(el => el.checked = vals.includes(el.value));
+}
+
+function openModal(id=null) {
+  editId = id;
+  clearForm();
+  if (id !== null) {
+    const t = trials.find(x => x.id === id);
+    document.getElementById('f-greenhouse').value = t.greenhouse;
+    document.getElementById('f-variety').value    = t.variety;
+    document.getElementById('f-stem').value        = t.stemLength;
+    document.getElementById('f-date').value        = t.plantingDate;
+    document.getElementById('f-plants').value      = t.numPlants;
+    document.getElementById('f-notes').value       = t.notes || '';
+    const hr = document.querySelector(`input[name="headSize"][value="${t.headSize}"]`);
+    if (hr) hr.checked = true;
+    const sr = document.querySelector(`input[name="severity"][value="${t.severity}"]`);
+    if (sr) sr.checked = true;
+    setCheckedByName('cpests',    t.pests    || []);
+    setCheckedByName('cdiseases', t.diseases || []);
+    document.getElementById('modalTitle').textContent = 'Edit Trial Entry';
+  } else {
+    document.getElementById('modalTitle').textContent = 'New Trial Entry';
+  }
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  editId = null;
+}
+
+function clearForm() {
+  ['f-greenhouse','f-variety','f-stem','f-date','f-plants','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('input[name="headSize"],input[name="severity"],input[name="cpests"],input[name="cdiseases"]')
+    .forEach(r => r.checked = false);
+}
+
+function saveEntry() {
+  const greenhouse = document.getElementById('f-greenhouse').value.trim();
+  const variety    = document.getElementById('f-variety').value.trim();
+  const stemLength = parseFloat(document.getElementById('f-stem').value);
+  const headSizeEl = document.querySelector('input[name="headSize"]:checked');
+  const severityEl = document.querySelector('input[name="severity"]:checked');
+  const plantingDate = document.getElementById('f-date').value;
+  const numPlants  = parseInt(document.getElementById('f-plants').value);
+  const notes      = document.getElementById('f-notes').value.trim();
+  const pests      = getCheckedByName('cpests');
+  const diseases   = getCheckedByName('cdiseases');
+
+  if (!greenhouse || !variety || isNaN(stemLength) || !headSizeEl || !severityEl || !plantingDate || isNaN(numPlants)) {
+    alert('Please fill in all required fields.');
+    return;
+  }
+
+  const entry = {
+    id: editId !== null ? editId : Date.now(),
+    greenhouse, variety, stemLength,
+    headSize: headSizeEl.value,
+    severity: severityEl.value,
+    pests, diseases,
+    plantingDate, numPlants, notes
+  };
+
+  if (editId !== null) {
+    trials[trials.findIndex(x => x.id === editId)] = entry;
+  } else {
+    trials.push(entry);
+  }
+  save(); render(); closeModal();
+}
+
+function deleteEntry(id) {
+  if (!confirm('Delete this trial entry?')) return;
+  trials = trials.filter(x => x.id !== id);
+  save(); render();
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  document.querySelectorAll('th').forEach(th => th.classList.remove('sorted'));
+  const el = document.getElementById('th-' + col);
+  if (el) el.classList.add('sorted');
+  render();
+}
+
+function ghClass(name) {
+  const idx = [...new Set(trials.map(t => t.greenhouse))].indexOf(name) % 4;
+  return ['gh-a','gh-b','gh-c','gh-d'][idx];
+}
+
+function headDots(size) {
+  const filled = headMap[size] || 0;
+  return Array.from({length:4},(_,i) => `<div class="head-dot ${i<filled?'filled':''}"></div>`).join('');
+}
+
+function maxStem() { return Math.max(...trials.map(t => t.stemLength), 1); }
+
+function renderTags(items, cls) {
+  if (!items || items.length === 0) return `<span class="tag-item tag-none">None</span>`;
+  return items.map(p => `<span class="tag-item ${cls}">${p}</span>`).join('');
+}
+
+function render() {
+  const allGH = [...new Set(trials.map(t => t.greenhouse))].sort();
+  document.getElementById('gh-list').innerHTML = allGH.map(g => `<option value="${g}">`).join('');
+
+  const ghSelect = document.getElementById('filterGH');
+  const ghVal = ghSelect.value;
+  ghSelect.innerHTML = '<option value="">All Greenhouses</option>' +
+    allGH.map(g => `<option ${g===ghVal?'selected':''}>${g}</option>`).join('');
+
+  const search  = document.getElementById('searchInput').value.toLowerCase();
+  const sevFilt = document.getElementById('filterSev').value;
+
+  let filtered = trials.filter(t => {
+    const blob = [t.variety, t.greenhouse, ...(t.pests||[]), ...(t.diseases||[])].join(' ').toLowerCase();
+    return (!search || blob.includes(search)) &&
+           (!ghVal  || t.greenhouse === ghVal) &&
+           (!sevFilt|| t.severity   === sevFilt);
+  });
+
+  filtered.sort((a,b) => {
+    let va = a[sortCol], vb = b[sortCol];
+    if (sortCol === 'headSize') { va = headMap[va]||0; vb = headMap[vb]||0; }
+    if (typeof va === 'string') return va.localeCompare(vb) * sortDir;
+    return (va-vb) * sortDir;
+  });
+
+  document.getElementById('stat-trials').textContent  = trials.length;
+  document.getElementById('stat-plants').textContent  = trials.reduce((s,t)=>s+t.numPlants,0).toLocaleString();
+  document.getElementById('stat-houses').textContent  = new Set(trials.map(t=>t.greenhouse)).size;
+
+  const maxS  = maxStem();
+  const tbody = document.getElementById('tableBody');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="icon">🌱</div><p>No trial entries found. Add your first entry!</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(t => {
+    const stemPct = Math.round((t.stemLength / maxS) * 100);
+    const dateStr = t.plantingDate
+      ? new Date(t.plantingDate+'T00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+      : '—';
+    const sev = t.severity || t.pest || 'Low'; // backward compat
+    return `
+      <tr>
+        <td><span class="gh-badge ${ghClass(t.greenhouse)}">${t.greenhouse}</span></td>
+        <td>
+          <strong>${t.variety}</strong>
+          ${t.notes ? `<br><small style="color:var(--muted);font-size:11px">${t.notes}</small>` : ''}
+        </td>
+        <td>
+          <div class="stem-bar">
+            <div class="stem-bar-track"><div class="stem-bar-fill" style="width:${stemPct}%"></div></div>
+            <span>${t.stemLength} cm</span>
+          </div>
+        </td>
+        <td>
+          <div class="head-dots">${headDots(t.headSize)}</div>
+          <small style="color:var(--muted);font-size:11px">${t.headSize}</small>
+        </td>
+        <td><div class="tag-list">${renderTags(t.pests,   'tag-pest')}</div></td>
+        <td><div class="tag-list">${renderTags(t.diseases,'tag-disease')}</div></td>
+        <td><span class="sev-badge ${sevColor[sev]}">${sev}</span></td>
+        <td style="white-space:nowrap">${dateStr}</td>
+        <td><strong>${t.numPlants.toLocaleString()}</strong></td>
+        <td>
+          <div class="actions">
+            <button class="icon-btn" onclick="openModal(${t.id})" title="Edit">✎</button>
+            <button class="icon-btn del" onclick="deleteEntry(${t.id})" title="Delete">✕</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+document.getElementById('searchInput').addEventListener('input', render);
+document.getElementById('filterGH').addEventListener('change', render);
+document.getElementById('filterSev').addEventListener('change', render);
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+function exportCSV() {
+  const headers = ['Greenhouse','Variety','Stem Length (cm)','Head Size','Pests','Diseases','Severity','Planting Date','Plants','Notes'];
+  const rows = trials.map(t => [
+    t.greenhouse, t.variety, t.stemLength, t.headSize,
+    (t.pests||[]).join('; '),
+    (t.diseases||[]).join('; '),
+    t.severity||t.pest, t.plantingDate, t.numPlants, t.notes||''
+  ]);
+  const csv = [headers,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'maji-mazuri-variety-trials.csv';
+  a.click();
+}
+
+// Demo seed
+if (trials.length === 0) {
+  trials = [
+    { id:1, greenhouse:'GH-01', variety:'Roma VF',    stemLength:52, headSize:'Medium',  severity:'Low',      pests:[],                           diseases:[],                        plantingDate:'2026-01-15', numPlants:200, notes:'Good germination rate' },
+    { id:2, greenhouse:'GH-01', variety:'Big Beef',   stemLength:68, headSize:'X-Large', severity:'Moderate', pests:['Thrips','Whiteflies'],       diseases:['Powdery Mildew'],         plantingDate:'2026-01-20', numPlants:150, notes:'' },
+    { id:3, greenhouse:'GH-02', variety:'Cherry Sun', stemLength:38, headSize:'Small',   severity:'Low',      pests:[],                           diseases:[],                        plantingDate:'2026-02-01', numPlants:400, notes:'Compact habit' },
+    { id:4, greenhouse:'GH-02', variety:'Bellstar',   stemLength:45, headSize:'Medium',  severity:'Low',      pests:['Mites'],                    diseases:['Downy Mildew'],          plantingDate:'2026-02-10', numPlants:180, notes:'' },
+    { id:5, greenhouse:'GH-03', variety:'Beefmaster', stemLength:72, headSize:'X-Large', severity:'High',     pests:['Thrips','Caterpillar','Whiteflies'], diseases:['Botrytis','Rust'], plantingDate:'2026-02-15', numPlants:90,  notes:'Monitor closely' },
+    { id:6, greenhouse:'GH-03', variety:'Sungold F1', stemLength:41, headSize:'Small',   severity:'Low',      pests:[],                           diseases:[],                        plantingDate:'2026-03-01', numPlants:320, notes:'' },
+    { id:7, greenhouse:'GH-04', variety:'Early Girl', stemLength:55, headSize:'Medium',  severity:'Moderate', pests:['Whiteflies'],               diseases:['Downy Mildew','Powdery Mildew'], plantingDate:'2026-03-10', numPlants:210, notes:'Early season trial' },
+  ];
+  save();
+}
+
+render();
+</script>
+</body>
+</html>
